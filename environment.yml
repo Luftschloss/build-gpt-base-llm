@@ -1,0 +1,9 @@
+name: llm-gpt
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - torch==2.5.1
+      - tiktoken==0.5.1
