@@ -23,6 +23,7 @@ class SimpleTokenizerV1:
         return text
 
 
+# 支持词库外的token，使用<|unk|> token替换未知词汇
 class SimpleTokenizerV2:
     def __init__(self, vocab):
         self.str_to_int = vocab
@@ -31,7 +32,7 @@ class SimpleTokenizerV2:
     def encode(self, text):
         preprocessed = re.split(r'([,.?_!"()\']|--|\s)', text)
         preprocessed = [item.strip() for item in preprocessed if item.strip()]
-        #A 用 <|unk|> tokens替换未知词汇
+        # 用 <|unk|> tokens替换未知词汇
         preprocessed = [item if item in self.str_to_int else "<|unk|>" for item in preprocessed]
         ids = [self.str_to_int[s] for s in preprocessed]
         return ids

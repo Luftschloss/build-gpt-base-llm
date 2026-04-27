@@ -24,6 +24,9 @@ class GPTDatasetV1(Dataset):
     def __getitem__(self, idx):
         return self.input_ids[idx], self.target_ids[idx]
 
+# batch_size: 每个批次的数据量
+# max_length: 输入序列的最大长度
+# stride: 滑动窗口的步长，控制输入序列之间的重叠程度, 更多的重叠可能会导致过拟合
 
 def create_dataloader_v1(txt, batch_size=4, max_length=256, 
                          stride=128, shuffle=True, drop_last=True, num_workers=0):
