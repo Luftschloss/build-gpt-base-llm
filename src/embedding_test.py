@@ -94,10 +94,10 @@ def step3(raw_text: str) -> None:
     print(first_batch)
     print(second_batch)
 
-# 构建嵌入层 (提供TokenID查询的功能，从一个TokenID到嵌入向量的映射)
+# 构建嵌入层 (提供TokenID查询的功能，从一个TokenID到嵌入向量的映射) Token对应的嵌入向量是一个连续的数值数组，代表了这个Token在嵌入空间中的位置，这些向量可以捕捉Token之间的语义关系和上下文信息，训练过程中会不断优化这些向量。
 def step4() -> None:
-    vocab_size = 6  # 词汇表大小，通常是唯一token的数量, BPE分词器中有50,257个token
-    output_dim = 3  # 每个token的嵌入向量维度, GPT-3模型中每个token的嵌入向量维度为12,288
+    vocab_size = 6  # 词汇表大小，通常是唯一token的数量, BPE分词器中有50,257个token，这是是分词表大小决定模型的词汇容量的一个重要因素，是由分词器的设计和训练数据的多样性决定的
+    output_dim = 3  # 每个token的嵌入向量维度, GPT-3模型中每个token的嵌入向量维度为12,288，这是模型容量的一个重要因素，较大的嵌入维度可以捕捉更丰富的语义信息，但也会增加计算和内存成本。
     torch.manual_seed(123)
     # 创建一个包含TokenID（0-5）的嵌入层
     embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
