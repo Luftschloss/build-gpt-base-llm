@@ -60,7 +60,7 @@ def build_attention_inputs_from_sentence(
     token_ids = tokenizer.encode(sentence)
     print("Token IDs:\n", token_ids)
     token_ids_tensor = torch.tensor(token_ids)
-    with torch.random.fork_rng(devices=[]):
+    with torch.random.fork_rng(devices=[]): # 临时保存当前 PyTorch 随机数生成器的状态，确保在函数执行后恢复原状态，避免影响外部随机数生成器的状态。
         if seed is not None:
             torch.manual_seed(seed)
 
@@ -165,7 +165,7 @@ def SimpleSelfAttentionExample(inputs):
 def SelfAttentionWithTrainableWeightsExample(inputs):
     x_2 = inputs[1]         # 以第二个token "journey"
     d_in = inputs.shape[1]  # 输入token嵌入向量维度
-    d_out = 2               # 输出维度，Q/K/V向量维度，教学示例中取较小值便于观察
+    d_out = d_in            # 输出维度，Q/K/V向量维度，教学示例中取较小值便于观察
 
     # step1: 构建线性变换生成查询（Q）、键（K）和值（V）向量
     # 一般GPT类模型中，输入维度和输出通常是相同的，下面初始化三个权重矩阵W_query、W_key和W_value，这些矩阵是模型的可训练参数，在训练过程中会被优化以学习如何有效地计算查询、键和值向量。
@@ -231,52 +231,68 @@ def SelfAttentionWithTrainableWeightsExample(inputs):
     sa_v1 = SelfAttention_v1(d_in, d_out)
     print("SelfAttention_v1 output:\n", sa_v1(inputs))
 
-    torch.manual_seed(789)
-    sa_v2 = SelfAttention_v2(d_in, d_out)
-    print("SelfAttention_v2 output:\n", sa_v2(inputs))
-
 # 3 因果自注意力机制示例
 def CausalAttentionExample(inputs):
+    print("====Causal Attention 1====")
+    torch.manual_seed(789)
+    d_in = inputs.shape[1]
+    d_out = d_in   
+    sa_v2 = SelfAttention_v2(d_in, d_out)
+    print("SelfAttention_v2 output:\n", sa_v2(inputs))
+    queries = sa_v2.W_query(inputs)
+    keys = sa_v2.W_key(inputs)
+    attn_scores = queries @ keys.T
+    print("Attention scores:\n", attn_scores)
+    attn_weights = torch.softmax(attn_scores / keys.shape[-1]**0.5, dim=1)
+    print("Causal attention weights:\n", attn_weights)
+    context_length = inputs.shape[0]
+    # 使用 PyTorch 的 tril 函数来生成一个掩码矩阵，使对角线以上的值为零：
+    mask_simple = torch.tril(torch.ones(context_length, context_length))
+    print("Causal mask:\n", mask_simple)
+    masked_simple = attn_weights*mask_simple
+    print("Masked simple attention weights:\n", masked_simple)
+    row_sums = masked_simple.sum(dim=1, keepdim=True)   # 计算每一行的和，保持维度不变，便于后续归一化
+    masked_simple_norm = masked_simple / row_sums
+    print("Masked simple attention weights (normalized):\n", masked_simple_norm)
+
+    print("\n====Causal Attention 2====")
+    # 通过创建一个对角线以上全为 1 的掩码，然后将这些 1 替换为负无穷大（-inf）值，从而实现这种更高效的掩码技巧：
+    mask = torch.triu(torch.ones(context_length, context_length), diagonal=1)
+    masked_attn_scores = attn_scores.masked_fill(mask.bool(), -torch.inf)
+    print("Masked attention scores:\n", masked_attn_scores)
+    attn_weights = torch.softmax(masked_attn_scores / keys.shape[-1]**0.5, dim=1)
+    print("Causal attention weights:\n", attn_weights)
+
+    print("\n====Causal Attention 3====")
+    # 生成一个三维张量，包含 2 个输入文本，每个文本包含 6 个 token，每个 token 表示为一个 3 维嵌入向量
     batch = torch.stack((inputs, inputs), dim=0)
-    batch_size, context_length, d_in = batch.shape
-    d_out = 2
-
-    print("====Causal Attention====")
     print("Batch shape:", batch.shape)
-
     torch.manual_seed(123)
-    causal_attn = CausalAttention(
-        d_in=d_in,
-        d_out=d_out,
-        context_length=context_length,
-        dropout=0.0
-    )
-    context_vecs, attn_weights = causal_attn(batch, return_attn_weights=True)
-    print("Causal mask:\n", causal_attn.mask[:context_length, :context_length])
-    print("Causal attention weights for first batch:\n", attn_weights[0])
-    print("Causal attention output shape:", context_vecs.shape)
+    ca = CausalAttention(d_in, d_out, context_length, 0.0)
+    context_vecs = ca(batch)
+    print("Causal attention output:", context_vecs)
+    
 
 
 # 4 多头注意力机制示例
 def MultiHeadAttentionExample(inputs):
     batch = torch.stack((inputs, inputs), dim=0)
-    batch_size, context_length, d_in = batch.shape
-    d_out = 2
+    context_length = inputs.shape[0]
+    d_in = inputs.shape[1]
+    d_out = d_in
 
     print("====Multi-Head Attention Wrapper====")
     torch.manual_seed(123)
-    num_heads = 2
     multihead_attn = MultiHeadAttentionWrapper(
         d_in=d_in,
         d_out=d_out,
         context_length=context_length,
         dropout=0.0,
-        num_heads=num_heads
+        num_heads=batch.shape[0]
     )
     multihead_context_vecs = multihead_attn(batch)
-    print("Multi-head attention output shape:", multihead_context_vecs.shape)
-    print("Each head d_out:", d_out, "; num_heads:", num_heads)
-
+    print("Multi-head attention output:\n", multihead_context_vecs)
+    print("multihead_context_vecs.shape:", multihead_context_vecs.shape)
 
 
 def main():
@@ -291,8 +307,8 @@ def main():
     # inputs = build_attention_inputs_from_sentence("Your journey starts with one step")  
     # print("Attention Inputs:\n", inputs)
     # SimpleSelfAttentionExample(inputs)
-    SelfAttentionWithTrainableWeightsExample(inputs)
-    CausalAttentionExample(inputs)
+    # SelfAttentionWithTrainableWeightsExample(inputs)
+    # CausalAttentionExample(inputs)
     MultiHeadAttentionExample(inputs)
 
 
