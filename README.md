@@ -12,12 +12,21 @@
 │   ├── tokenizer_test.py       # 分词器（SimpleTokenizerV1/V2）
 │   ├── dataset_loader_test.py  # 数据集与 DataLoader
 │   ├── embedding_test.py       # Token 嵌入 + 位置编码
-│   └── attention_test.py       # 注意力机制（待实现）
+│   ├── attention_test.py       # 注意力机制
+│   ├── self_attention.py       # 自注意力、因果注意力、多头注意力模块
+│   └── DummyGPTModel.py        # Dummy GPT 模型结构测试
 ```
 
 ## 环境配置
 
 ```bash
+# 首次创建 conda 环境
+conda env create -f environment.yml
+
+# 已创建环境后同步新增依赖
+conda env update -f environment.yml --prune
+
+# 激活环境
 conda activate llm-gpt
 ```
 
@@ -34,6 +43,7 @@ python src/main.py tokenizer     # 分词器
 python src/main.py dataloader    # 数据加载器
 python src/main.py embedding     # 嵌入层
 python src/main.py attention     # 注意力机制
+python src/main.py dummy_gpt     # Dummy GPT 模型结构
 ```
 
 ## 模块说明
@@ -43,4 +53,5 @@ python src/main.py attention     # 注意力机制
 | tokenizer_test | SimpleTokenizerV1/V2 + BPE (tiktoken) | ✅ |
 | dataset_loader_test | GPTDatasetV1 + 滑动窗口 DataLoader | ✅ |
 | embedding_test | Token Embedding + 绝对位置编码 | ✅ |
-| attention_test | 因果注意力机制 | ⏳ |
+| attention_test / self_attention | 自注意力、因果注意力、多头注意力 | ✅ |
+| DummyGPTModel | GPT 外层结构占位模型与 logits shape 测试 | ✅ |

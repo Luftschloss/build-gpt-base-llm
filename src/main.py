@@ -19,6 +19,7 @@ from tokenizer_test import SimpleTokenizerV1, SimpleTokenizerV2
 from dataset_loader_test import create_dataloader_v1
 from embedding_test import step1, step2, step3, step4, step5
 import attention_test as attention
+from dummy_gpt_model_test import run_dummy_gpt_model_test
 
 # ---------- 数据集路径 ----------
 _dataset_path = Path(__file__).resolve().parent.parent / "datasets" / "the-verdict_test.txt"
@@ -32,7 +33,7 @@ def _load_raw_text() -> str:
 
 def run_tokenizer():
     print("=" * 60)
-    print("[1/4] 分词器模块测试 (SimpleTokenizerV1 / V2 + BPE)")
+    print("[1/5] 分词器模块测试 (SimpleTokenizerV1 / V2 + BPE)")
     print("=" * 60)
     raw_text = _load_raw_text()
     step1(raw_text)
@@ -40,7 +41,7 @@ def run_tokenizer():
 
 def run_dataloader():
     print("=" * 60)
-    print("[2/4] 数据加载器模块测试 (GPTDatasetV1 + DataLoader)")
+    print("[2/5] 数据加载器模块测试 (GPTDatasetV1 + DataLoader)")
     print("=" * 60)
     raw_text = _load_raw_text()
     step3(raw_text)
@@ -48,7 +49,7 @@ def run_dataloader():
 
 def run_embedding():
     print("=" * 60)
-    print("[3/4] 嵌入层模块测试 (Token Embedding + Position Embedding)")
+    print("[3/5] 嵌入层模块测试 (Token Embedding + Position Embedding)")
     print("=" * 60)
     raw_text = _load_raw_text()
     step5(raw_text)
@@ -56,9 +57,16 @@ def run_embedding():
 
 def run_attention():
     print("=" * 60)
-    print("[4/4] 注意力机制模块测试")
+    print("[4/5] 注意力机制模块测试")
     print("=" * 60)
     attention.main()
+
+
+def run_dummy_gpt():
+    print("=" * 60)
+    print("[5/5] Dummy GPT 模型结构测试")
+    print("=" * 60)
+    run_dummy_gpt_model_test()
 
 
 def run_all():
@@ -69,17 +77,20 @@ def run_all():
     print("LLM-GPT 全部模块测试")
     print("=" * 60)
 
-    print("\n========== 1/4  分词器 ==========")
+    print("\n========== 1/5  分词器 ==========")
     step1(raw_text)
 
-    print("\n========== 2/4  数据加载器 ==========")
+    print("\n========== 2/5  数据加载器 ==========")
     step3(raw_text)
 
-    print("\n========== 3/4  嵌入层 ==========")
+    print("\n========== 3/5  嵌入层 ==========")
     step5(raw_text)
 
-    print("\n========== 4/4  注意力机制 ==========")
-    attention.main(raw_text)
+    print("\n========== 4/5  注意力机制 ==========")
+    attention.main()
+
+    print("\n========== 5/5  Dummy GPT 模型 ==========")
+    run_dummy_gpt_model_test()
 
     print("\n" + "=" * 60)
     print("全部模块测试完成 !")
@@ -94,7 +105,7 @@ def main():
         "module",
         nargs="?",
         default="all",
-        choices=["tokenizer", "dataloader", "embedding", "attention", "all"],
+        choices=["tokenizer", "dataloader", "embedding", "attention", "dummy_gpt", "all"],
         help="要测试的模块（默认: all）",
     )
     args = parser.parse_args()
@@ -104,6 +115,7 @@ def main():
         "dataloader": run_dataloader,
         "embedding": run_embedding,
         "attention": run_attention,
+        "dummy_gpt": run_dummy_gpt,
         "all": run_all,
     }
     runners[args.module]()
