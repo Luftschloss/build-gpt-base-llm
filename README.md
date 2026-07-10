@@ -14,7 +14,9 @@
 │   ├── embedding_test.py       # Token 嵌入 + 位置编码
 │   ├── attention_test.py       # 注意力机制
 │   ├── self_attention.py       # 自注意力、因果注意力、多头注意力模块
-│   └── DummyGPTModel.py        # Dummy GPT 模型结构测试
+│   ├── dummy_gpt_model_test.py # 第 4 章占位 GPT 与组件演示
+│   ├── gpt_model_test.py       # 第 4 章完整 GPTModel 与文本生成演示
+│   └── GPTModel/               # GPT 核心模块包
 ```
 
 ## 环境配置
@@ -44,6 +46,8 @@ python src/main.py dataloader    # 数据加载器
 python src/main.py embedding     # 嵌入层
 python src/main.py attention     # 注意力机制
 python src/main.py dummy_gpt     # Dummy GPT 模型结构
+python src/main.py gpt           # 完整 GPTModel 快速演示（轻量配置）
+python src/main.py gpt124m       # GPT-2 small 124M 配置演示（占用更多内存）
 ```
 
 ## 模块说明
@@ -55,3 +59,5 @@ python src/main.py dummy_gpt     # Dummy GPT 模型结构
 | embedding_test | Token Embedding + 绝对位置编码 | ✅ |
 | attention_test / self_attention | 自注意力、因果注意力、多头注意力 | ✅ |
 | DummyGPTModel | GPT 外层结构占位模型与 logits shape 测试 | ✅ |
+| GPTModel | LayerNorm、GELU、FeedForward、TransformerBlock、完整 GPTModel | ✅ |
+| generate_text_simple | 贪婪解码，将模型 logits 逐步转换为 token ID / 文本 | ✅ |

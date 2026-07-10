@@ -20,6 +20,7 @@ from dataset_loader_test import create_dataloader_v1
 from embedding_test import step1, step2, step3, step4, step5
 import attention_test as attention
 from dummy_gpt_model_test import run_dummy_gpt_model_test
+from gpt_model_test import run_gpt_model_124m_test, run_gpt_model_test
 
 # ---------- 数据集路径 ----------
 _dataset_path = Path(__file__).resolve().parent.parent / "datasets" / "the-verdict_test.txt"
@@ -64,9 +65,23 @@ def run_attention():
 
 def run_dummy_gpt():
     print("=" * 60)
-    print("[5/5] Dummy GPT 模型结构测试")
+    print("[5/6] Dummy GPT 模型结构测试")
     print("=" * 60)
     run_dummy_gpt_model_test()
+
+
+def run_gpt():
+    print("=" * 60)
+    print("[6/6] 第 4 章完整 GPTModel 快速演示")
+    print("=" * 60)
+    run_gpt_model_test()
+
+
+def run_gpt124m():
+    print("=" * 60)
+    print("[6/6] 第 4 章 GPT-2 small (124M) 完整配置演示")
+    print("=" * 60)
+    run_gpt_model_124m_test()
 
 
 def run_all():
@@ -89,8 +104,11 @@ def run_all():
     print("\n========== 4/5  注意力机制 ==========")
     attention.main()
 
-    print("\n========== 5/5  Dummy GPT 模型 ==========")
+    print("\n========== 5/6  Dummy GPT 模型 ==========")
     run_dummy_gpt_model_test()
+
+    print("\n========== 6/6  完整 GPTModel ==========")
+    run_gpt_model_test()
 
     print("\n" + "=" * 60)
     print("全部模块测试完成 !")
@@ -105,7 +123,16 @@ def main():
         "module",
         nargs="?",
         default="all",
-        choices=["tokenizer", "dataloader", "embedding", "attention", "dummy_gpt", "all"],
+        choices=[
+            "tokenizer",
+            "dataloader",
+            "embedding",
+            "attention",
+            "dummy_gpt",
+            "gpt",
+            "gpt124m",
+            "all",
+        ],
         help="要测试的模块（默认: all）",
     )
     args = parser.parse_args()
@@ -116,6 +143,8 @@ def main():
         "embedding": run_embedding,
         "attention": run_attention,
         "dummy_gpt": run_dummy_gpt,
+        "gpt": run_gpt,
+        "gpt124m": run_gpt124m,
         "all": run_all,
     }
     runners[args.module]()
